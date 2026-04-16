@@ -1,0 +1,76 @@
+# 应用全局配置（YAML）
+# 说明：
+# - 开发运行默认读取本文件（与 main.py 同目录）
+# - 也可通过环境变量 TTCAS_CONFIG 指定“绝对路径”，用于热补丁/多环境部署
+app:
+  # organization_name / application_name 会影响 Qt 的 QStandardPaths 与 QSettings 默认路径
+  # 建议保持稳定：否则用户的 AppData 目录与历史设置会变
+  organization_name: "TTCAS"
+  application_name: "TTCASApp"
+  # 界面展示名称
+  application_display_name: "基于TyG-WWI-ALB的2型糖尿病住院患者代谢分型与治疗反应预测系统"
+  # 主窗口标题
+  window_title: "基于TyG-WWI-ALB的2型糖尿病住院患者代谢分型与治疗反应预测系统"
+  # 应用版本号（登录页/报告写入）
+  app_version: "1.0"
+
+model:
+  # 聚类/分型逻辑版本号（登录页/报告写入）
+  cluster_version: "1.0-20260416"
+  # 分型方法：
+  # - centroid_nearest：质心最近原则（推荐）
+  # - rule_mapping：规则映射（兜底）
+  method: "centroid_nearest"
+
+  # TyG-eGFR-ALB（通道1）
+  zscore_mean:
+    tyg: 9.825665319759032
+    egfr: 106.02465753424657
+    alb: 42.084931506849315
+  zscore_std:
+    tyg: 0.8948674047224983
+    egfr: 22.109486424021114
+    alb: 4.4411546791131205
+  centroids_z:
+    - {tyg: -0.60229, egfr: 0.083905, alb: -0.984933}   # Centroid1 -> 表型1
+    - {tyg: -0.240118, egfr: 0.221296, alb: 0.652024}   # Centroid2 -> 表型2
+    - {tyg: -0.372008, egfr: -2.098026, alb: -0.73312}  # Centroid3 -> 表型3
+    - {tyg: 1.407813, egfr: 0.512547, alb: 0.375008}    # Centroid4 -> 表型4
+
+  # TyG-WWI-ALB（通道2）
+  zscore_mean_wwi:
+    tyg: 9.858998186351506
+    wwi: 11.155510640435097
+    alb: 42.227307692307700
+  zscore_std_wwi:
+    tyg: 0.843717958923657
+    wwi: 0.7780630184307524
+    alb: 4.470579983356230
+  centroids_z_wwi:
+    - {tyg: -0.602854294580, wwi: 0.557765446218, alb: -1.404365456796}
+    - {tyg: 1.218543045569, wwi: -0.468911917361, alb: 0.500571252763}
+    - {tyg: -0.585638464606, wwi: -0.762360591274, alb: 0.129433919268}
+    - {tyg: -0.027710648299, wwi: 1.109114251609, alb: 0.408258286594}
+
+ui:
+  # 应用图标路径（Windows 建议 .ico）；相对路径以仓库根目录为基准
+  icon_path: "assets\\app.ico"
+  # 全局默认字体大小（pt）
+  font_point_size: 11
+  # 默认主题（light/dark）
+  theme_default: "light"
+  # 说明图片路径（图片尺寸建议 <=1600×1600）
+  cluster_principle_image: "assets\\cluster_principle_260416.jpg"
+  about:
+    version_info: |-
+      基于TyG-WWI-ALB的2型糖尿病住院患者代谢分型与治疗反应预测系统 TTCAS
+      Version: 1.0_20260416
+    dev_info: |-
+      Develop environment: Python + PySide6 + PySide6-Fluent-Widgets
+      Running mode: Local
+      Structure: UI and business logic separated, configuration external (YAML)
+      Source code: https://github.com/GuLifan
+      License: GNU GPL v3
+    contact_dev: |-
+      Publications: https://orcid.org/0009-0000-4677-8713
+      Contact: lifanguxjtu@outlook.com
