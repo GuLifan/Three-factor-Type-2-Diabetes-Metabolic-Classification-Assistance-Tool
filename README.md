@@ -103,27 +103,6 @@ TTCAS/
 
 ---
 
-## 测试（push 前强烈建议）
-
-### 全量单元/冒烟测试
-
-```bash
-.\.venv\Scripts\python.exe -m unittest -v
-```
-
-### 极限压力测试（默认至少 1800s）
-
-```bash
-.\.venv\Scripts\python.exe .\tests\stress_tester.py --min-seconds 1800 --iterations 5000 --snapshot-interval 120
-```
-
-输出目录：`tests/_artifacts/`（已在 `.gitignore` 忽略）
-- `stress_report.json`：动作序列与异常记录
-- `snapshot_*.png`：周期截图
-- `crash_*.png`：异常现场截图（若发生）
-- `app.log`：压力测试器日志（独立于 AppData）
-
----
 
 ## 常见问题
 
