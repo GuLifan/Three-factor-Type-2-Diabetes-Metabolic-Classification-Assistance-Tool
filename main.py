@@ -10,6 +10,12 @@ from pathlib import Path
 
 
 def _ensure_src_on_path() -> Path:
+    # 如果是 PyInstaller 打包后的单文件，使用 _MEIPASS 作为根目录
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        repo_root = Path(sys._MEIPASS)
+        # 确保 _MEIPASS 在 sys.path 中（PyInstaller 可能已经添加，但为了保险）
+        sys.path.insert(0, str(repo_root))
+        return repo_root
     repo_root = Path(__file__).resolve().parent
     src_dir = repo_root / "src"
     sys.path.insert(0, str(src_dir))

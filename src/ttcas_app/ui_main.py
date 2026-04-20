@@ -50,7 +50,7 @@ class MainWindow(FluentWindow):
         self._logger = logger
         self._session = session
         # repo_root：用于定位 assets/（用户手册、说明图片等）
-        self._repo_root = Path(__file__).resolve().parents[2]
+        self._repo_root = cfg.repo_root
         # 初始化语言：优先从 QApplication property 读取，否则回退 QSettings
         self._lang = self._get_initial_language()
 
@@ -210,16 +210,72 @@ class MainWindow(FluentWindow):
             font.setPointSize(next_pt)
             app.setFont(font)
 
-            # 强制刷新顶层窗口（有些控件对字体变化不立即重算布局）
-            for w in QApplication.topLevelWidgets():
+            # 类似主题切换的彻底控件刷新逻辑，确保字体更改立即生效
+            try:
+                import shiboken6  # type: ignore
+
+                def _is_valid(o: object) -> bool:
+                    try:
+                        return bool(shiboken6.isValid(o))  # type: ignore[attr-defined]
+                    except Exception:
+                        return False
+
+            except Exception:
+
+                def _is_valid(o: object) -> bool:
+                    return o is not None
+
+            roots: list[QWidget] = []
+            for w in list(QApplication.topLevelWidgets()):
+                if isinstance(w, QWidget) and _is_valid(w):
+                    roots.append(w)
+            for w in (app.activeModalWidget(), app.activePopupWidget()):
+                if isinstance(w, QWidget) and _is_valid(w):
+                    roots.append(w)
+
+            targets: list[QWidget] = []
+            seen: set[int] = set()
+            for root in roots:
+                for w in [root, *list(root.findChildren(QWidget))]:
+                    if not _is_valid(w):
+                        continue
+                    wid = id(w)
+                    if wid in seen:
+                        continue
+                    seen.add(wid)
+                    targets.append(w)
+
+            # 更新所有控件
+            for w in targets:
                 try:
+                    w.setFont(font)
                     w.update()
+                except Exception:
+                    continue
+
+            # 刷新控件样式，确保字体更改生效
+            for root in roots:
+                try:
+                    if not _is_valid(root):
+                        continue
+                    st = root.style()
+                    try:
+                        st.unpolish(root)
+                    except Exception:
+                        pass
+                    try:
+                        st.polish(root)
+                    except Exception:
+                        pass
+                    root.update()
                 except Exception:
                     continue
 
             # 设置页刷新显示的字号
             self._settings_page.refresh(theme_hint=None, font_pt_hint=next_pt)
             self._logger.info("字体大小调整：%s", next_pt)
+            # 确保所有事件都被处理，字体更改立即生效
+            QApplication.processEvents()
         except Exception:
             self._logger.exception("字体调整失败")
             QMessageBox.critical(self, "错误", "字体调整失败，请查看日志。")

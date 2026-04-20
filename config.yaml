@@ -8,15 +8,16 @@ app:
   organization_name: "TTCAS"
   application_name: "TTCASApp"
   # 界面展示名称
-  application_display_name: "基于TyG-WWI-ALB的2型糖尿病住院患者代谢分型与治疗反应预测系统"
+  application_display_name: "基于三要素的2型糖尿病患者代谢分型与治疗反应预测系统"
   # 主窗口标题
-  window_title: "基于TyG-WWI-ALB的2型糖尿病住院患者代谢分型与治疗反应预测系统"
+  window_title: "基于三要素的2型糖尿病患者代谢分型与治疗反应预测系统"
+  # A Prediction System for Metabolic Subtypes and Treatment Responses in T2DM Based on Three Factors
   # 应用版本号（登录页/报告写入）
   app_version: "1.0"
 
 model:
   # 聚类/分型逻辑版本号（登录页/报告写入）
-  cluster_version: "1.0-20260416"
+  cluster_version: "1.0_20260416"
   # 分型方法：
   # - centroid_nearest：质心最近原则（推荐）
   # - rule_mapping：规则映射（兜底）
@@ -60,7 +61,7 @@ ui:
   # 默认主题（light/dark）
   theme_default: "light"
   # 说明图片路径（图片尺寸建议 <=1600×1600）
-  cluster_principle_image: "assets\\cluster_principle_260416.jpg"
+  cluster_principle_image: "assets\\cluster_principle_260407.jpg"
   about:
     version_info: |-
       基于TyG-WWI-ALB的2型糖尿病住院患者代谢分型与治疗反应预测系统 TTCAS
