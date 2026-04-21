@@ -3,6 +3,11 @@
 TTCAS 为 Windows 离线桌面端应用（PySide6 + PySide6-Fluent-Widgets / qfluentwidgets），用于住院/门诊患者信息录入、指标计算、分型推断、报告导出与本地归档。  
 项目采用 UI 与业务逻辑分离的架构，算法参数与界面信息外置 YAML，所有数据落盘到用户 AppData，便于升级/迁移与权限隔离。
 
+**版本信息**：1.0.0.0  
+**版权所有**：Copyright © 2026 GuLifan. All rights reserved.  
+**开发单位**：The First Affiliated Hospital of Xi'an Jiaotong University  
+**文件描述**：A Prediction System for Metabolic Subtypes and Treatment Responses in T2DM Patients
+
 ---
 
 ## 功能概览
@@ -44,6 +49,85 @@ python -m venv .venv
 ```bash
 .\.venv\Scripts\python.exe main.py
 ```
+
+---
+
+## 发布与分发
+
+### Windows EXE 打包
+
+TTCAS 支持打包为独立的 Windows 可执行文件，无需安装 Python 环境即可运行。
+
+#### 打包步骤
+
+TTCAS 支持两种打包方式：**PyInstaller**（推荐）和 **Nuitka**（备选）。PyInstaller 打包速度较快，Nuitka 生成的可执行文件性能更好但打包时间较长。
+
+##### 使用 PyInstaller（推荐）
+
+1. **生成可执行文件**：
+   ```bash
+   .\.venv\Scripts\pyinstaller.exe TTCAS_PyInstaller.spec --clean
+   ```
+
+2. **代码签名**（可选，推荐减少安全中心误报）：
+   ```powershell
+   # 使用 Windows SDK signtool 签名
+   & "C:\Program Files (x86)\Windows Kits\10\bin\<版本>\x64\signtool.exe" sign /f "ttcas_cert.pfx" /p TTCAS123 /fd SHA256 /t "http://timestamp.digicert.com" /v "dist\TTCAS_PyInstaller.exe"
+   ```
+
+##### 使用 Nuitka（备选）
+
+1. **安装 Nuitka**：
+   ```bash
+   .\.venv\Scripts\python.exe -m pip install nuitka zstandard
+   ```
+
+2. **打包为单体 EXE**：
+   ```bash
+   .\.venv\Scripts\python.exe -m nuitka --standalone --onefile --windows-icon-from-ico=assets\app.ico --windows-file-version=1.0.0.0 --windows-product-version=1.0.0.0 --windows-company-name="The First Affiliated Hospital of Xi'an Jiaotong University" --windows-file-description="A Prediction System for Metabolic Subtypes and Treatment Responses in T2DM Patients" --windows-legal-copyright="Copyright © 2026 GuLifan. All rights reserved." --output-filename=TTCAS.exe main.py
+   ```
+
+   > **注意**：Nuitka 打包可能需要较长时间（10-30分钟），且生成的 EXE 文件可能触发 Windows 安全中心误报，建议使用代码签名减少误报。
+
+#### 代码签名与安全中心误报解决
+
+新打包的 Windows EXE 文件可能被 Windows Defender 错误标记为威胁。通过以下措施可显著减少误报：
+
+1. **嵌入完整的版本资源**：确保 EXE 文件包含公司名称、版权信息、文件描述等资源信息（通过 `version_info.txt` 实现）。
+2. **代码签名**：使用数字证书对 EXE 文件进行签名，验证发布者身份。
+   - **自签名证书**（测试用途）：
+     ```powershell
+     # 创建自签名证书
+     $cert = New-SelfSignedCertificate -Type CodeSigningCert -Subject "CN=TTCAS" -KeyUsage DigitalSignature -FriendlyName "TTCAS Code Signing" -CertStoreLocation "Cert:\CurrentUser\My" -KeyExportPolicy Exportable -NotAfter (Get-Date).AddYears(1)
+     Export-PfxCertificate -Cert $cert -FilePath "ttcas_cert.pfx" -Password (ConvertTo-SecureString -String "TTCAS123" -Force -AsPlainText)
+     ```
+   - **商业证书**（正式分发）：建议购买 DigiCert、Sectigo 等受信任的代码签名证书。
+   - **签名命令**：
+     ```powershell
+     & "C:\Program Files (x86)\Windows Kits\10\bin\<版本>\x64\signtool.exe" sign /f "ttcas_cert.pfx" /p TTCAS123 /fd SHA256 /t "http://timestamp.digicert.com" /v "dist\TTCAS_PyInstaller.exe"
+     ```
+3. **提交误报报告**：若仍被误报，可向 Microsoft Defender 提交误报报告（https://www.microsoft.com/en-us/wdsi/filesubmission）。
+
+#### 分发说明
+
+- **打包文件**：`dist\TTCAS_PyInstaller.exe`（PyInstaller）或 `TTCAS.exe`（Nuitka）
+- **版本信息**：已嵌入公司、版权、版本号等完整资源信息
+- **签名状态**：支持自签名和商业证书签名
+- **安全中心兼容**：通过完整版本资源和代码签名减少 Windows Defender 误报
+
+#### 运行打包后的应用
+
+打包生成的 EXE 文件（`dist\TTCAS_PyInstaller.exe` 或 `TTCAS.exe`）是独立的 Windows 可执行文件，无需安装 Python 环境即可运行。
+
+1. **首次运行**：Windows 可能会显示“Windows 保护了你的电脑”警告，点击“更多信息”→“仍要运行”即可。
+2. **数据目录**：应用数据仍保存在 `%APPDATA%\TTCAS\TTCASApp\` 目录下，与源码运行时的位置相同。
+3. **字体与主题**：打包后的应用支持完整的字体调整、主题切换和语言切换功能。
+
+#### 打包配置说明
+
+- **版本资源**：`version_info.txt` 定义文件版本、公司名称、版权信息等
+- **包含资源**：自动包含 `config.yaml`、`assets/` 目录、用户手册等文件
+- **应用图标**：使用 `assets\app.ico` 作为 Windows 图标
 
 ---
 
